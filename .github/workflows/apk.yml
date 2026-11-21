@@ -13,6 +13,17 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      - name: Fayllarni joyiga qo'yish
+        run: |
+          J=android/app/src/main/java/uz/diyor/odatlar
+          mkdir -p $J
+          for f in *.java; do [ -f "$f" ] && mv -f "$f" $J/; done
+          [ -f AndroidManifest.xml ] && mv -f AndroidManifest.xml android/app/src/main/
+          [ -f build.gradle ] && mv -f build.gradle android/app/build.gradle
+          [ -f app.js ] && mv -f app.js src/app.js
+          [ -f index.html ] && mv -f index.html www/index.html
+          ls $J
+
       - uses: actions/setup-node@v4
         with:
           node-version: 22
