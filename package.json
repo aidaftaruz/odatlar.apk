@@ -1,0 +1,19 @@
+{
+  "name": "odatlar-daftari",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "build": "esbuild src/app.js --bundle --minify --format=iife --outfile=www/app.js && npx cap sync android"
+  },
+  "dependencies": {
+    "@capacitor/android": "8.6.2",
+    "@capacitor/core": "8.6.2",
+    "@capacitor/local-notifications": "8.3.1"
+  },
+  "devDependencies": {
+    "@capacitor/cli": "8.6.2",
+    "esbuild": "^0.25.0",
+    "@fontsource/caveat": "*",
+    "@fontsource/nunito": "*"
+  }
+}

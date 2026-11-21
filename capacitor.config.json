@@ -1,0 +1,9 @@
+{
+  "appId": "uz.diyor.odatlar",
+  "appName": "Odatlar daftari",
+  "webDir": "www",
+  "plugins": {
+    "SystemBars": { "initialViewportFitValueHint": "cover", "style": "DEFAULT" },
+    "LocalNotifications": { "smallIcon": "ic_stat_odat", "iconColor": "#e0453a" }
+  }
+}
