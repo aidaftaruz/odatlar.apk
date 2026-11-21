@@ -1,0 +1,50 @@
+name: APK yig'ish
+
+on:
+  push:
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 21
+
+      - name: Ilovani tayyorlash
+        run: |
+          npm ci
+          npm run build
+
+      - name: APK yig'ish
+        working-directory: android
+        run: |
+          chmod +x gradlew
+          ./gradlew assembleRelease --no-daemon
+
+      - name: APK'ni olish
+        run: cp android/app/build/outputs/apk/release/app-release.apk odatlar-daftari.apk
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: odatlar-daftari-apk
+          path: odatlar-daftari.apk
+
+      - uses: softprops/action-gh-release@v2
+        with:
+          tag_name: v1.0.${{ github.run_number }}
+          name: Odatlar daftari 1.0.${{ github.run_number }}
+          body: "Telefonda shu sahifani oching va odatlar-daftari.apk faylini yuklab o'rnating."
+          files: odatlar-daftari.apk
+          make_latest: true
