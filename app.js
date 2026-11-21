@@ -49,7 +49,7 @@ const MEALS=[["n","Nonushta"],["t","Tushlik"],["k","Kechki ovqat"],["s","Tamaddi
 const ACT=["Kam harakat (asosan o‘tirib)","O‘rtacha (haftada 1–3 marta faol)","Yuqori (har kuni og‘ir mehnat yoki sport)"];
 const GOAL=["Sekin vazn tashlash (~0,25 kg/hafta)","Vazn tashlash (~0,5 kg/hafta)","Vaznni saqlash"];
 let tab=(location.hash==="#kaloriya")?"cal":"odat";
-const normCal=c=>({p:c&&c.p&&typeof c.p==="object"?c.p:null,my:Array.isArray(c&&c.my)?c.my:[],log:c&&c.log&&typeof c.log==="object"?c.log:{},w:c&&c.w&&typeof c.w==="object"?c.w:{}});
+const normCal=c=>({p:c&&c.p&&typeof c.p==="object"?c.p:null,my:Array.isArray(c&&c.my)?c.my:[],log:c&&c.log&&typeof c.log==="object"?c.log:{},w:c&&c.w&&typeof c.w==="object"?c.w:{},ex:c&&c.ex&&typeof c.ex==="object"?c.ex:{}});
 const fnorm=s=>String(s).toLowerCase().replace(/[‘’ʻʼ`']/g,"'");
 const kk=n=>Math.round(n).toLocaleString("ru-RU").replace(/ /g," ");
 function calT(){const p=S.cal&&S.cal.p;if(!p)return null;const bmi=p.w/((p.h/100)**2),low=bmi<18.5,g=low?2:p.g;
@@ -57,23 +57,43 @@ function calT(){const p=S.cal&&S.cal.p;if(!p)return null;const bmi=p.w/((p.h/100
  const t=Math.round(Math.max(tdee-[275,550,0][g],p.s==="m"?1500:1200)/10)*10;
  return{bmr:Math.round(bmr),tdee:Math.round(tdee/10)*10,t,bmi,low,g}}
 const dayFood=d=>S.cal.log[key(d)]||[];
+// ---- harakat: mashqlar va yurish ----
+const EX=[["Tez piyoda yurish",4.3,["piyoda"]],["Yugurish",8.3,["yugur"]],["Velosiped",6.8,["velosiped"]],["Suzish",6,["suz"]],
+["Futbol",7,["futbol"]],["Voleybol yoki basketbol",6,["voleybol","basketbol"]],["Kuch mashqi: otjimaniya, turnik, gantel",5,["otjimaniya","turnik","gantel","kuch mashq"]],
+["Badantarbiya",3.8,["badantarbiya","gimnastika"]],["Cho‘zilish mashqi",2.3,["cho'zil"]],["Yoga",2.5,["yoga"]],["Arqon sakrash",11,["arqon"]],
+["Zinapoyadan chiqish",8,["zina"]],["Raqs",5,["raqs"]],["Uy yumushlari, tozalash",3.3,["tartib","tozala","yumush"]],["Bog‘ yoki dala ishi",4.5,["bog'","dala"]],["Og‘ir jismoniy ish",6,["og'ir ish"]]];
+const STEP_BASE=4000;
+const bodyW=()=>S.cal.p?S.cal.p.w:70,bodyH=()=>S.cal.p?S.cal.p.h:170;
+const dayEx=d=>S.cal.ex[key(d)]||[];
+const stepsOn=d=>Math.max(0,...S.habits.filter(h=>h.unit==="qadam").map(h=>val(h,d)));
+const stepKm=n=>n*bodyH()*0.415/100000;
+const stepKcal=n=>n*bodyW()*0.0005;
+const fmt1=n=>n.toFixed(1).replace(".",",");
+function burned(d){const ex=dayEx(d).reduce((a,e)=>a+e.k,0),st=stepsOn(d),walk=stepKcal(Math.max(0,st-STEP_BASE));return{ex,walk,steps:st,stepAll:stepKcal(st),total:ex+walk}}
+const exTags=e=>(EX.find(x=>x[0]===e.n)||[0,0,[]])[2];
+const exFor=(h,d)=>{const nm=fnorm(h.name);return dayEx(d).filter(e=>exTags(e).some(t=>nm.includes(t)))};
+const exMin=(h,d)=>h.goal&&h.unit==="daqiqa"?exFor(h,d).reduce((a,e)=>a+e.min,0):0;
 const eaten=d=>dayFood(d).reduce((a,e)=>a+e.k*e.q,0);
 let moreOpen=false;document.addEventListener("toggle",e=>{if(e.target.classList&&e.target.classList.contains("more")&&e.target.closest("#calBody"))moreOpen=e.target.open},true);
 function renderCal(){
  const T=calT(),el=$("#calBody");if(!el)return;
  if(!T){el.innerHTML=`<div class="empty" style="margin-top:16px"><b style="font-size:18px">Kunlik me’yoringizni hisoblaymiz</b><div>Buning uchun jins, yosh, bo‘y va vazningiz kerak. Ma’lumot faqat sizda qoladi.</div><div class="row"><button class="btn pri" data-popen="1">Boshlash</button></div></div>`;return}
- const e=Math.round(eaten(view)),left=T.t-e,p=S.cal.p;
+ const e=Math.round(eaten(view)),B=burned(view),left=Math.round(T.t-(e-B.total)),p=S.cal.p;
  const ws=Object.keys(S.cal.w).sort(),lastW=ws.length?S.cal.w[ws[ws.length-1]]:p.w,firstW=ws.length?S.cal.w[ws[0]]:p.w;
- el.innerHTML=`<div class="stats mini c3" style="margin-top:12px">
-  <div class="st"><b>${kk(T.t)}</b><span>me’yor, kkal</span></div>
-  <div class="st"><b style="color:${left<0?"var(--osh)":"inherit"}">${kk(Math.abs(left))}</b><span>${left<0?"oshdi":"qoldi"}, kkal</span></div>
-  <div class="st"><b>${String(lastW).replace(".",",")}</b><span>vazn, kg</span></div></div>
+ el.innerHTML=`<div class="stats mini" style="margin-top:12px">
+  <div class="st"><b>${kk(T.t)}</b><span>me’yor</span></div>
+  <div class="st"><b>${kk(e)}</b><span>yeyildi</span></div>
+  <div class="st"><b>${kk(B.total)}</b><span>sarflandi</span></div>
+  <div class="st"><b style="color:${left<0?"var(--osh)":"inherit"}">${kk(Math.abs(left))}</b><span>${left<0?"oshdi":"qoldi"}</span></div></div>
  ${T.low?`<div class="card" style="border-color:var(--osh)">Vazningiz bo‘yingizga nisbatan kam. Vazn tashlash tavsiya etilmaydi, me’yor vaznni saqlashga hisoblandi. Savollaringiz bo‘lsa, shifokor bilan maslahatlashing.</div>`:""}
  <div class="bar"><button class="addb" data-fopen="1" aria-label="Ovqat qo‘shish"><span class="pl">+</span><span class="lt"> Ovqat qo‘shish</span></button></div>
  ${MEALS.map(([m,n])=>{const list=dayFood(view).map((x,i)=>[x,i]).filter(([x])=>x.m===m),sum=list.reduce((a,[x])=>a+x.k*x.q,0);
   return `<div class="meal ${list.length?"":"emp"}"><h3><span>${n}</span><span class="ms">${sum?kk(sum)+" kkal":""}<button class="madd" data-fopen="${m}" aria-label="${n}ga qo‘shish">+</button></span></h3>${list.length?list.map(([x,i])=>`<div class="fe"><div><b>${esc(x.n)}</b><small>${esc(x.p)} · ${kk(x.k)} kkal</small></div>
    <div class="qty"><button data-fq="${i}|-0.5" aria-label="Kamaytirish">−</button><span>${String(x.q).replace(".",",")}</span><button data-fq="${i}|0.5" aria-label="Ko‘paytirish">+</button></div><b class="fk">${kk(x.k*x.q)}</b></div>`).join(""):""}</div>`}).join("")}
- <div class="leg">Kaloriyalar taxminiy. Uy ovqatida yog‘ miqdoriga qarab farq qiladi. Miqdorni 0 ga tushirsangiz, yozuv o‘chadi.</div>
+ <div class="meal"><h3><span>Harakat</span><span class="ms">${B.total?"−"+kk(B.total)+" kkal":""}<button class="madd" data-exopen="1" aria-label="Mashq qo‘shish">+</button></span></h3>
+  ${B.steps?`<div class="fe"><div><b>Yurish</b><small>${kk(B.steps)} qadam · ${fmt1(stepKm(B.steps))} km · jami ~${kk(B.stepAll)} kkal</small></div><span></span><b class="fk">${kk(B.walk)}</b></div>`:""}
+  ${dayEx(view).map((x,i)=>`<div class="fe"><div><b>${esc(x.n)}</b><small>${x.min} daqiqa</small></div><button class="xdel" data-exdel="${i}" aria-label="O‘chirish">×</button><b class="fk">${kk(x.k)}</b></div>`).join("")}</div>
+ <div class="leg">Kaloriyalar taxminiy. Kundalik oddiy harakat (${kk(STEP_BASE)} qadamgacha) me’yorga kiritilgan, shuning uchun yurishdan faqat undan ortig‘i ayiriladi. Qadamlar sanalayotgan bo‘lsa, piyoda yurishni mashq sifatida alohida qo‘shmang.</div>
  <details class="more"><summary>Vazn va profil</summary>
  <div class="card"><form id="wform" class="wrow"><input type="number" id="wkg" step="0.1" min="30" max="300" inputmode="decimal" placeholder="Bugungi vazn, kg" aria-label="Vazn, kg" value="${S.cal.w[key(view)]||""}"><button class="btn pri">Saqlash</button></form>
   <div class="fig" style="min-height:200px;margin-top:12px"><svg id="wsvg"></svg></div>
@@ -149,7 +169,8 @@ document.addEventListener("click",e=>{const t=e.target,c=s=>t.closest&&t.closest
   const f=[n,p,k];if(!S.cal.my.some(x=>x[0]===n&&x[1]===p))S.cal.my.unshift(f);addFood(f)}});
 
 S.cal=normCal();S.val={};
-const val=(h,d)=>((S.val[key(d)]||{})[h.id])||0;
+const raw=(h,d)=>((S.val[key(d)]||{})[h.id])||0;
+const val=(h,d)=>raw(h,d)+exMin(h,d);
 const stepOf=h=>h.goal>=1000?500:h.unit==="daqiqa"?5:1;
 function setVal(id,d,v){const k=key(d),o={...(S.val[k]||{})};v=Math.max(0,Math.round(v));if(v)o[id]=v;else delete o[id];
  if(Object.keys(o).length)S.val[k]=o;else delete S.val[k];save();render()}
@@ -174,12 +195,13 @@ async function enableAuto(h){
  }catch(e){toast("Yoqib bo‘lmadi: "+(e&&e.message||"xato"),null)}}
 const mkHabit=p=>{const h={id:uid(),name:p[0],cat:p[1],days:[0,1,2,3,4,5,6],created:key(today())};if(p[2]){h.goal=p[2];h.unit=p[3]}return h};
 const due=(h,d)=>h.days.includes(d.getDay())&&key(d)>=h.created;
-const done=(h,d)=>h.goal?val(h,d)>=h.goal:(S.log[key(d)]||[]).includes(h.id);
+const done=(h,d)=>h.goal?val(h,d)>=h.goal:((S.log[key(d)]||[]).includes(h.id)||exFor(h,d).length>0);
 function streak(h,from){let d=new Date(from),n=0;if(due(h,d)&&!done(h,d))d=add(d,-1);
  for(let i=0;i<1000&&key(d)>=h.created;i++){if(due(h,d)){if(done(h,d))n++;else break}d=add(d,-1)}return n}
 function rate(h,days){let a=0,b=0;for(let i=0;i<days;i++){const d=add(today(),-i);if(due(h,d)){b++;if(done(h,d))a++}}return b?Math.round(a/b*100):null}
 
-function toggle(id,d){const hh=S.habits.find(x=>x.id===id);if(hh&&isAuto(hh)){toast("Qadamlar avtomatik sanaladi. Tuzatish uchun raqamni bosing",null);return}if(hh&&hh.goal){setVal(id,d,done(hh,d)?0:hh.goal);return}
+function toggle(id,d){const hh=S.habits.find(x=>x.id===id);if(hh&&isAuto(hh)){toast("Qadamlar avtomatik sanaladi. Tuzatish uchun raqamni bosing",null);return}if(hh&&hh.goal){setVal(id,d,done(hh,d)?0:Math.max(0,hh.goal-exMin(hh,d)));return}
+ if(hh&&!hh.goal&&exFor(hh,d).length){toast("Mashq yozuvi orqali belgilangan",null);return}
  const k=key(d),a=(S.log[k]||[]).slice(),i=a.indexOf(id);i<0?a.push(id):a.splice(i,1);
  if(a.length)S.log[k]=a;else delete S.log[k];save();render()}
 
@@ -194,13 +216,13 @@ function render(){
  $("#rn").textContent=dn+"/"+dueH.length;
  $("#rg").style.strokeDashoffset=364.4*(1-(dueH.length?dn/dueH.length:0));
  $("#vOdat").hidden=tab!=="odat";$("#vCal").hidden=tab!=="cal";$("#tOdat").setAttribute("aria-pressed",tab==="odat");$("#tCal").setAttribute("aria-pressed",tab==="cal");
- $(".ring").classList.toggle("sm",tab==="cal");if(tab==="cal"){const T=calT(),ea=Math.round(eaten(view));$("#rn").textContent=T?kk(ea):"—";$("#rsub").textContent=T?"/ "+kk(T.t)+" kkal":"kkal";
+ $(".ring").classList.toggle("sm",tab==="cal");if(tab==="cal"){const T=calT(),ea=Math.max(0,Math.round(eaten(view)-burned(view).total));$("#rn").textContent=T?kk(ea):"—";$("#rsub").textContent=T?"/ "+kk(T.t)+" kkal":"kkal";
   $("#rg").style.strokeDashoffset=364.4*(1-(T?Math.min(ea/T.t,1):0));$("#rg").style.stroke=T&&ea>T.t?"var(--osh)":""}
  else{$("#rsub").textContent="bajarildi";$("#rg").style.stroke=""}
  const cnt=c=>S.habits.filter(h=>c==="all"||h.cat===c).length;
  $("#chips").innerHTML=[["all","Hammasi",""]].concat(Object.entries(CATS).map(([k,v])=>[k,v[0],v[1]]))
   .map(([k,n,c])=>`<button class="chip" data-f="${k}" aria-pressed="${filter===k}" style="--c:${c}">${c?"<i></i>":""}${n} · ${cnt(k)}</button>`).join("")
-  +`<button class="chip" id="libb">G‘oyalar · ${PRE.length}</button><button class="addb" id="addb" aria-label="Yangi odat"><span class="pl">+</span><span class="lt"> Yangi odat</span></button>`;
+  +`<button class="chip" data-exopen="1">+ Mashq</button><button class="chip" id="libb">G‘oyalar · ${PRE.length}</button><button class="addb" id="addb" aria-label="Yangi odat"><span class="pl">+</span><span class="lt"> Yangi odat</span></button>`;
  const week=[...Array(7)].map((_,i)=>add(view,i-6));
  $("#wkhead").innerHTML=S.habits.length?`<span></span><span></span><div class="wkl">${week.map(d=>`<span>${WD[d.getDay()]}</span>`).join("")}</div><span></span>`:"";
  const hs=S.habits.filter(h=>filter==="all"||h.cat===filter).sort((a,b)=>due(b,view)-due(a,view));
@@ -210,7 +232,7 @@ function render(){
  else $("#list").innerHTML=hs.map(h=>{const on=done(h,view),dd=due(h,view),st=streak(h,view);
   return `<li class="h ${dd?"":"off"} ${h.goal?"has-ctl":""}" style="--c:${CATS[h.cat][1]}">
   <button class="chk ${on?"on":""}" data-t="${h.id}" aria-pressed="${on}" aria-label="${esc(h.name)} bajarildi" ${key(view)<h.created?"disabled":""}><svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="3.2"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg></button>
-  <div class="hm"><b>${esc(h.name)}</b><small>${CATS[h.cat][0]} · ${dd?(st?st+" kun ketma-ket":"seriya hali yo‘q"):"bu kun rejada yo‘q"}</small></div>${h.goal?(()=>{const v=val(h,view);return `<div class="ctl"><div class="cnt"><button data-dv="${h.id}|-1" aria-label="Kamaytirish">−</button><button class="cv" data-setv="${h.id}">${kk(v)} / ${kk(h.goal)}<span class="u"> ${esc(h.unit)}</span></button><button data-dv="${h.id}|1" aria-label="Ko‘paytirish">+</button>${h.unit==="qadam"&&key(view)===key(t)&&!isAuto(h)?`<button class="walkb" data-walk="${h.id}">Yurish</button>`:""}${h.unit==="qadam"&&NATIVE&&!S.stepAuto?`<button class="walkb" data-auto="${h.id}">Avtomatik</button>`:""}</div>${isAuto(h)?`<div class="autonote">Avtomatik sanaladi${((STEP.days[key(view)]||{}).vehicle)?` · transportda ${kk(STEP.days[key(view)].vehicle)} qadam ayirildi`:""}${STEP.vehicle&&key(view)===key(t)?" · hozir transportda":""}</div>`:""}<div class="pt"><i style="width:${Math.min(100,v/h.goal*100)}%"></i></div></div>`})():""}
+  <div class="hm"><b>${esc(h.name)}</b><small>${CATS[h.cat][0]} · ${dd?(st?st+" kun ketma-ket":"seriya hali yo‘q"):"bu kun rejada yo‘q"}${!h.goal&&exFor(h,view).length?" · mashqdan belgilandi":""}</small></div>${h.goal?(()=>{const v=val(h,view);return `<div class="ctl"><div class="cnt"><button data-dv="${h.id}|-1" aria-label="Kamaytirish">−</button><button class="cv" data-setv="${h.id}">${kk(v)} / ${kk(h.goal)}<span class="u"> ${esc(h.unit)}</span></button><button data-dv="${h.id}|1" aria-label="Ko‘paytirish">+</button>${h.unit==="qadam"&&key(view)===key(t)&&!isAuto(h)?`<button class="walkb" data-walk="${h.id}">Yurish</button>`:""}${h.unit==="qadam"&&NATIVE&&!S.stepAuto?`<button class="walkb" data-auto="${h.id}">Avtomatik</button>`:""}</div>${h.unit==="qadam"&&v?`<div class="autonote">${fmt1(stepKm(v))} km · ~${kk(stepKcal(v))} kkal</div>`:""}${exMin(h,view)?`<div class="autonote">${exMin(h,view)} daqiqasi mashq yozuvidan</div>`:""}${isAuto(h)?`<div class="autonote">Avtomatik sanaladi${((STEP.days[key(view)]||{}).vehicle)?` · transportda ${kk(STEP.days[key(view)].vehicle)} qadam ayirildi`:""}${STEP.vehicle&&key(view)===key(t)?" · hozir transportda":""}</div>`:""}<div class="pt"><i style="width:${Math.min(100,v/h.goal*100)}%"></i></div></div>`})():""}
   <div class="wk">${week.map(d=>{const k=key(d),cls=k>key(t)||k<h.created?"no":done(h,d)?"on":due(h,d)?"":"na";
    return `<button class="c ${cls} ${k===vk?"cur":""}" data-c="${h.id}|${k}" aria-label="${d.getDate()}-${MON[d.getMonth()]}"></button>`}).join("")}</div>
   <button class="ed" data-e="${h.id}" aria-label="Tahrirlash"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 20h4L19 9l-4-4L4 16z"/></svg></button></li>`}).join("");
@@ -253,7 +275,7 @@ document.addEventListener("click",e=>{const b=e.target.closest("button");if(!b)r
  else if(d.ft){ft=d.ft;const nm=$("#fn").value;drawForm();$("#fn").value=nm}
  else if(d.dv){const[id,dir]=d.dv.split("|"),h=S.habits.find(x=>x.id===id);
   if(isAuto(h)){const k=key(view);S.stepAdj={...S.stepAdj,[k]:(S.stepAdj[k]||0)+(+dir)*stepOf(h)};autoApply();save();render()}
-  else setVal(id,view,val(h,view)+(+dir)*stepOf(h))}
+  else setVal(id,view,raw(h,view)+(+dir)*stepOf(h))}
  else if(d.auto)enableAuto(S.habits.find(x=>x.id===d.auto));
  else if(d.setv)openVal(S.habits.find(x=>x.id===d.setv));
  else if(d.walk)openWalk(S.habits.find(x=>x.id===d.walk));
@@ -267,8 +289,26 @@ document.addEventListener("click",e=>{const b=e.target.closest("button");if(!b)r
 let vh=null;
 function openVal(h){vh=h;$("#vt").textContent=h.name;$("#vin").value=val(h,view)||"";$("#vu").textContent="Maqsad: "+kk(h.goal)+" "+h.unit;$("#vmodal").classList.add("open");setTimeout(()=>$("#vin").focus(),30)}
 $("#vform").onsubmit=e=>{e.preventDefault();const v=+String($("#vin").value).replace(/\s/g,"");$("#vmodal").classList.remove("open");if(!(vh&&v>=0))return;
- if(isAuto(vh)){const k=key(view);S.stepAdj={...S.stepAdj,[k]:Math.round(v-((STEP.days[k]||{}).walk||0))};autoApply();save();render()}else setVal(vh.id,view,v)};
+ if(isAuto(vh)){const k=key(view);S.stepAdj={...S.stepAdj,[k]:Math.round(v-((STEP.days[k]||{}).walk||0))};autoApply();save();render()}else setVal(vh.id,view,v-exMin(vh,view))};
 $("#vcan").onclick=()=>$("#vmodal").classList.remove("open");
+// ---- mashq qo'shish ----
+let xsel=-1,xmin=30;
+function openEx(){xsel=-1;xmin=30;$("#xmin").value="";drawEx();$("#xmodal").classList.add("open")}
+function drawEx(){$("#xlist").innerHTML=EX.map((x,i)=>`<button type="button" class="opt" data-xs="${i}" aria-pressed="${xsel===i}">${esc(x[0])}</button>`).join("");
+ $("#xmins").innerHTML=[10,15,20,30,45,60].map(m=>`<button type="button" class="chip" data-xm="${m}" aria-pressed="${xmin===m&&!$("#xmin").value}">${m} daq</button>`).join("");
+ const m=+$("#xmin").value||xmin,k=xsel>=0?EX[xsel][1]*bodyW()*m/60:0;
+ $("#xprev").textContent=xsel>=0?`${EX[xsel][0]}, ${m} daqiqa ≈ ${kk(k)} kkal`+(S.cal.p?"":" (vazn kiritilmagan, 70 kg deb hisoblandi)"):"Mashq turini tanlang";$("#xadd").disabled=xsel<0}
+$("#xadd").onclick=()=>{if(xsel<0)return;const m=Math.round(+$("#xmin").value||xmin);if(!(m>0&&m<=600)){toast("Daqiqani kiriting",null);return}
+ const k=key(view),e={n:EX[xsel][0],min:m,k:Math.round(EX[xsel][1]*bodyW()*m/60)};S.cal.ex={...S.cal.ex,[k]:(S.cal.ex[k]||[]).concat([e])};
+ $("#xmodal").classList.remove("open");save();render();toast(e.n+": −"+kk(e.k)+" kkal",null)};
+$("#xcan").onclick=()=>$("#xmodal").classList.remove("open");
+$("#xmin").addEventListener("input",drawEx);
+document.addEventListener("click",e=>{const b=e.target.closest("button");if(!b)return;const d=b.dataset;
+ if(d.exopen)openEx();
+ else if(d.xs){xsel=+d.xs;drawEx()}
+ else if(d.xm){xmin=+d.xm;$("#xmin").value="";drawEx()}
+ else if(d.exdel){const k=key(view),a=(S.cal.ex[k]||[]).slice(),[x]=a.splice(+d.exdel,1);if(a.length)S.cal.ex[k]=a;else delete S.cal.ex[k];save();render();
+  toast("«"+x.n+"» o‘chirildi",()=>{S.cal.ex[k]=(S.cal.ex[k]||[]).concat([x]);save();render()})}});
 // ---- g'oyalar ----
 function openLib(){drawLib();$("#lmodal").classList.add("open")}
 function drawLib(){const have=new Set(S.habits.map(h=>h.name));

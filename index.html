@@ -99,6 +99,8 @@ input[type=time]{font:inherit;font-size:17px;font-weight:700;padding:8px 10px;bo
 .cnt{display:flex;align-items:center;gap:6px;flex-wrap:wrap;margin-top:6px}
 .cnt button{min-width:40px;height:40px;border-radius:10px;border:1.5px solid var(--line);font-weight:800;font-size:17px}
 .cnt .cv{padding:0 10px;font-size:15px;font-variant-numeric:tabular-nums}.cnt .walkb{padding:0 12px;font-size:15px;background:var(--c);color:#fff;border-color:var(--c)}
+.xdel{width:36px;height:36px;border-radius:10px;border:1.5px solid var(--line);font-size:18px;color:var(--mute)}
+.btn:disabled{opacity:.45}
 .autonote{font-size:12px;color:var(--mute);margin-top:6px}
 .ctl{grid-column:2/4;grid-row:2}.ctl .pt{margin-top:8px;height:8px}.cnt{margin-top:0}
 .lh{display:flex;align-items:center;gap:8px;margin:0;padding:12px 12px 6px;font-size:16px}.lh i{width:10px;height:10px;border-radius:50%;background:var(--c)}
@@ -274,6 +276,17 @@ input[type=number]{width:100%;font:inherit;font-size:16px;padding:11px 12px;bord
   <div class="note" id="wst"></div>
   <div class="row" style="justify-content:center"><button type="button" class="btn" id="wcan">Yopish</button><button type="button" class="btn pri" id="wgo">Boshlash</button><button type="button" class="btn pri" id="wstop" hidden>To‘xtatish</button><button type="button" class="btn pri" id="wadd" hidden>Qo‘shish</button></div>
   <div class="note">Hisob taxminiy. Faqat ilova ochiq va ekran yoniq paytda sanaydi.</div>
+ </div>
+</div>
+<div class="modal" id="xmodal" role="dialog" aria-modal="true" aria-labelledby="xt">
+ <div class="dlg">
+  <h2 id="xt" style="margin:0">Mashq qo‘shish</h2>
+  <div id="xlist" class="opts" style="margin-top:12px;max-height:38vh;overflow:auto"></div>
+  <label>Necha daqiqa</label>
+  <div class="bar" id="xmins" style="margin:0 0 8px"></div>
+  <input type="number" id="xmin" inputmode="numeric" min="1" max="600" placeholder="yoki o‘zingiz yozing, daqiqa" aria-label="Daqiqa">
+  <div class="note" id="xprev"></div>
+  <div class="row"><button type="button" class="btn" id="xcan" style="margin-left:auto">Bekor</button><button type="button" class="btn pri" id="xadd">Qo‘shish</button></div>
  </div>
 </div>
 <div class="toast" id="toast"><span id="tmsg"></span><button id="tund">Qaytarish</button></div>
