@@ -28,6 +28,12 @@ public class StepSetup {
                 .setActivityTransition(ActivityTransition.ACTIVITY_TRANSITION_ENTER).build());
             t.add(new ActivityTransition.Builder().setActivityType(DetectedActivity.IN_VEHICLE)
                 .setActivityTransition(ActivityTransition.ACTIVITY_TRANSITION_EXIT).build());
+            // yurish, yugurish yoki velosiped boshlansa — transportdan tushilgan deb hisoblanadi
+            int[] moving = { DetectedActivity.WALKING, DetectedActivity.RUNNING, DetectedActivity.ON_BICYCLE };
+            for (int a : moving) {
+                t.add(new ActivityTransition.Builder().setActivityType(a)
+                    .setActivityTransition(ActivityTransition.ACTIVITY_TRANSITION_ENTER).build());
+            }
             int flags = PendingIntent.FLAG_UPDATE_CURRENT | (Build.VERSION.SDK_INT >= 31 ? PendingIntent.FLAG_MUTABLE : 0);
             PendingIntent pi = PendingIntent.getBroadcast(c, 7301, new Intent(c, TransitionReceiver.class), flags);
             ActivityRecognition.getClient(c).requestActivityTransitionUpdates(new ActivityTransitionRequest(t), pi);

@@ -21,8 +21,12 @@ public class TransitionReceiver extends BroadcastReceiver {
             try {
                 StepReader.readAndRecord(c, 4000); // shu paytgacha bo'lgan qadamlar eski holatga yoziladi
                 for (ActivityTransitionEvent ev : res.getTransitionEvents()) {
-                    if (ev.getActivityType() == DetectedActivity.IN_VEHICLE) {
+                    int a = ev.getActivityType();
+                    if (a == DetectedActivity.IN_VEHICLE) {
                         StepStore.setVehicle(c, ev.getTransitionType() == ActivityTransition.ACTIVITY_TRANSITION_ENTER);
+                    } else if ((a == DetectedActivity.WALKING || a == DetectedActivity.RUNNING || a == DetectedActivity.ON_BICYCLE)
+                        && ev.getTransitionType() == ActivityTransition.ACTIVITY_TRANSITION_ENTER) {
+                        StepStore.setVehicle(c, false);
                     }
                 }
             } finally {

@@ -50,6 +50,25 @@ public class StepCounterPlugin extends Plugin {
     }
 
     @PluginMethod
+    public void setVehicle(PluginCall call) {
+        final Context c = getContext().getApplicationContext();
+        final boolean on = call.getBoolean("on", false);
+        new Thread(() -> { StepReader.readAndRecord(c, 2500); StepStore.setVehicle(c, on); call.resolve(state()); }).start();
+    }
+
+    @PluginMethod
+    public void reclaim(PluginCall call) {
+        final Context c = getContext().getApplicationContext();
+        final String date = call.getString("date", StepStore.day(System.currentTimeMillis()));
+        new Thread(() -> {
+            StepReader.readAndRecord(c, 2500);
+            StepStore.reclaim(c, date);
+            if (date.equals(StepStore.day(System.currentTimeMillis()))) StepStore.setVehicle(c, false);
+            call.resolve(state());
+        }).start();
+    }
+
+    @PluginMethod
     public void getDays(PluginCall call) {
         final Context c = getContext().getApplicationContext();
         new Thread(() -> {
