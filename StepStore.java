@@ -9,6 +9,7 @@ import java.util.Date;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Locale;
+import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -63,6 +64,35 @@ public class StepStore {
     static boolean inVehicle(Context c) {
         SharedPreferences sp = c.getSharedPreferences(P, Context.MODE_PRIVATE);
         return sp.getBoolean("veh", false) && System.currentTimeMillis() - sp.getLong("vehSince", 0) <= MAX_VEHICLE_MS;
+    }
+
+    /** Yugurish/velosiped boshlandi. */
+    static synchronized void sessionStart(Context c, String type, long t) {
+        c.getSharedPreferences(P, Context.MODE_PRIVATE).edit().putLong("open_" + type, t).apply();
+    }
+
+    /** Yugurish/velosiped tugadi: davomiyligi 5 daqiqa–6 soat bo'lsa, mashq sifatida saqlanadi. */
+    static synchronized void sessionEnd(Context c, String type, long t) {
+        SharedPreferences sp = c.getSharedPreferences(P, Context.MODE_PRIVATE);
+        long s = sp.getLong("open_" + type, 0);
+        SharedPreferences.Editor ed = sp.edit().remove("open_" + type);
+        long d = t - s;
+        if (s > 0 && d >= 5 * 60 * 1000L && d <= 6 * 60 * 60 * 1000L) {
+            try {
+                JSONArray a = new JSONArray(sp.getString("sess", "[]"));
+                JSONObject o = new JSONObject();
+                o.put("t", type); o.put("s", s); o.put("e", t);
+                a.put(o);
+                JSONArray keep = new JSONArray();
+                for (int i = Math.max(0, a.length() - 300); i < a.length(); i++) keep.put(a.get(i));
+                ed.putString("sess", keep.toString());
+            } catch (JSONException ignored) {}
+        }
+        ed.apply();
+    }
+
+    static String sessionsJson(Context c) {
+        return c.getSharedPreferences(P, Context.MODE_PRIVATE).getString("sess", "[]");
     }
 
     /** Berilgan kundagi "transport" qadamlarini yurishga qaytaradi. */

@@ -2,6 +2,7 @@ package uz.diyor.odatlar;
 
 import android.content.Context;
 import android.os.Build;
+import com.getcapacitor.JSArray;
 import com.getcapacitor.JSObject;
 import com.getcapacitor.PermissionState;
 import com.getcapacitor.Plugin;
@@ -77,6 +78,7 @@ public class StepCounterPlugin extends Plugin {
             JSObject r = new JSObject();
             try { r.put("days", new JSObject(StepStore.daysJson(c))); } catch (Exception e) { r.put("days", new JSObject()); }
             r.put("vehicle", StepStore.inVehicle(c));
+            try { r.put("sessions", new JSArray(StepStore.sessionsJson(c))); } catch (Exception e) { r.put("sessions", new JSArray()); }
             r.put("live", v != null);
             call.resolve(r);
         }).start();

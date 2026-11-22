@@ -34,6 +34,12 @@ public class StepSetup {
                 t.add(new ActivityTransition.Builder().setActivityType(a)
                     .setActivityTransition(ActivityTransition.ACTIVITY_TRANSITION_ENTER).build());
             }
+            // yugurish va velosiped tugashini ham kuzatamiz — avtomatik mashq yozuvi uchun
+            int[] sports = { DetectedActivity.RUNNING, DetectedActivity.ON_BICYCLE };
+            for (int a : sports) {
+                t.add(new ActivityTransition.Builder().setActivityType(a)
+                    .setActivityTransition(ActivityTransition.ACTIVITY_TRANSITION_EXIT).build());
+            }
             int flags = PendingIntent.FLAG_UPDATE_CURRENT | (Build.VERSION.SDK_INT >= 31 ? PendingIntent.FLAG_MUTABLE : 0);
             PendingIntent pi = PendingIntent.getBroadcast(c, 7301, new Intent(c, TransitionReceiver.class), flags);
             ActivityRecognition.getClient(c).requestActivityTransitionUpdates(new ActivityTransitionRequest(t), pi);
