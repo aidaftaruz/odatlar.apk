@@ -204,7 +204,7 @@ function autoApply(){let ch=false;const ks=new Set(Object.keys(STEP.days).concat
  return ch}
 let stepBusy=false;
 async function syncSteps(){if(!NATIVE||!S.stepAuto||stepBusy)return;stepBusy=true;
- try{const r=await StepCounter.getDays();STEP={days:r.days||{},vehicle:!!r.vehicle,live:!!r.live,sess:Array.isArray(r.sessions)?r.sessions:[]};if(autoApply())save();render()}catch(e){}stepBusy=false}
+ try{const r=await StepCounter.getDays();pushWidget();STEP={days:r.days||{},vehicle:!!r.vehicle,live:!!r.live,sess:Array.isArray(r.sessions)?r.sessions:[]};if(autoApply())save();render()}catch(e){}stepBusy=false}
 async function enableAuto(h){
  try{let st=await StepCounter.status();
   if(!st.available){toast("Bu telefonda qadam sensori topilmadi",null);return}
@@ -226,7 +226,16 @@ function toggle(id,d){const hh=S.habits.find(x=>x.id===id);if(hh&&isAuto(hh)){to
  const k=key(d),a=(S.log[k]||[]).slice(),i=a.indexOf(id);i<0?a.push(id):a.splice(i,1);
  if(a.length)S.log[k]=a;else delete S.log[k];save();render()}
 
-function save(){try{localStorage.setItem("odat-v1",JSON.stringify(S))}catch(e){}}
+function save(){try{localStorage.setItem("odat-v1",JSON.stringify(S))}catch(e){}pushWidget()}
+// ---- bosh ekran vidjeti ----
+let wTimer=null;
+function pushWidget(){if(typeof NATIVE==="undefined"||!NATIVE)return;clearTimeout(wTimer);wTimer=setTimeout(()=>{try{
+ const t=today(),due_=S.habits.filter(h=>due(h,t)),qh=S.habits.filter(h=>h.unit==="qadam");
+ const tg=S.cal&&S.cal.p?intakeTarget(t):0;
+ StepCounter.updateWidget({steps:Math.round(stepsOn(t)),stepGoal:Math.round(qh.length?qh[0].goal:10000),habDone:due_.filter(h=>done(h,t)).length,habTotal:due_.length,
+  kcalIn:Math.round(eaten(t)),kcalTgt:Math.round(tg||0),...widgetEnergy(t)}).catch(()=>{})}catch(e){}},800)}
+function widgetEnergy(t){const p=S.cal&&S.cal.p;if(!p)return{};const bmr=10*p.w+6.25*p.h-5*p.a+(p.s==="m"?5:-161);
+ return{baseMeasured:bmr*1.1,baseFactor:bmr*[1.2,1.375,1.55][p.act],perStep:bodyW()*0.0005,exKcal:dayEx(t).reduce((a,e)=>a+e.k,0)}}
 const sync=t=>$("#sync").textContent=t;
 
 function render(){
@@ -413,6 +422,7 @@ $("#rsave").onclick=async()=>{S.rem=draft;save();$("#rmodal").classList.remove("
  else if(r==="ok")toast("Eslatma saqlandi",null)};
 applyRem(true);
 if(NATIVE&&S.stepAuto){StepCounter.start().catch(()=>{}).then(syncSteps)}
+pushWidget();
 setInterval(()=>{if(!document.hidden)syncSteps()},60000);
 document.addEventListener("visibilitychange",()=>{if(!document.hidden)syncSteps()});
 let lastDay=key(today());

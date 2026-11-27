@@ -12,6 +12,7 @@ public class StepWorker extends Worker {
     @NonNull @Override
     public Result doWork() {
         StepReader.readAndRecord(getApplicationContext(), 6000);
+        OdatWidget.refreshAll(getApplicationContext());
         return Result.success();
     }
 }

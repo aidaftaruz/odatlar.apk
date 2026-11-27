@@ -91,6 +91,14 @@ public class StepStore {
         ed.apply();
     }
 
+    /** Berilgan kundagi yurish qadamlari (sensor bo'yicha). */
+    static long walkOn(Context c, String date) {
+        try {
+            JSONObject o = new JSONObject(c.getSharedPreferences(P, Context.MODE_PRIVATE).getString("days", "{}")).optJSONObject(date);
+            return o == null ? 0 : o.optLong("walk", 0);
+        } catch (JSONException e) { return 0; }
+    }
+
     static String sessionsJson(Context c) {
         return c.getSharedPreferences(P, Context.MODE_PRIVATE).getString("sess", "[]");
     }

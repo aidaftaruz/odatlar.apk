@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/w_root" android:layout_width="match_parent" android:layout_height="match_parent"
+    android:orientation="vertical" android:background="@drawable/widget_bg" android:padding="14dp">
+        <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:orientation="horizontal">
+            <TextView android:layout_width="0dp" android:layout_weight="1" android:layout_height="wrap_content" android:text="Odatlar daftari" android:textColor="#FFFFFF" android:textSize="15sp" android:textStyle="bold" />
+            <TextView android:id="@+id/w_date" android:layout_width="wrap_content" android:layout_height="wrap_content" android:textColor="#AFC0E4" android:textSize="12sp" />
+        </LinearLayout>
+        <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:orientation="horizontal" android:layout_marginTop="8dp">
+            <TextView android:layout_width="0dp" android:layout_weight="1" android:layout_height="wrap_content" android:text="Qadam" android:textColor="#AFC0E4" android:textSize="13sp" />
+            <TextView android:id="@+id/w_steps_val" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="—" android:textColor="#FFFFFF" android:textSize="14sp" android:textStyle="bold" />
+        </LinearLayout>
+        <ProgressBar android:id="@+id/w_steps_bar" style="?android:attr/progressBarStyleHorizontal" android:layout_width="match_parent" android:layout_height="7dp" android:layout_marginTop="4dp" android:max="100" android:progress="0" android:progressDrawable="@drawable/widget_bar_green" />
+        <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:orientation="horizontal" android:layout_marginTop="8dp">
+            <TextView android:layout_width="0dp" android:layout_weight="1" android:layout_height="wrap_content" android:text="Odatlar" android:textColor="#AFC0E4" android:textSize="13sp" />
+            <TextView android:id="@+id/w_hab_val" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="—" android:textColor="#FFFFFF" android:textSize="14sp" android:textStyle="bold" />
+        </LinearLayout>
+        <ProgressBar android:id="@+id/w_hab_bar" style="?android:attr/progressBarStyleHorizontal" android:layout_width="match_parent" android:layout_height="7dp" android:layout_marginTop="4dp" android:max="100" android:progress="0" android:progressDrawable="@drawable/widget_bar_blue" />
+        <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:orientation="horizontal" android:layout_marginTop="8dp">
+            <LinearLayout android:layout_width="0dp" android:layout_weight="1" android:layout_height="wrap_content" android:orientation="vertical" android:layout_marginEnd="7dp">
+                <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:orientation="horizontal">
+                    <TextView android:layout_width="0dp" android:layout_weight="1" android:layout_height="wrap_content" android:text="Kirim" android:textColor="#AFC0E4" android:textSize="13sp" />
+                    <TextView android:id="@+id/w_kcal_val" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="—" android:textColor="#FFFFFF" android:textSize="14sp" android:textStyle="bold" />
+                </LinearLayout>
+                <ProgressBar android:id="@+id/w_kcal_bar" style="?android:attr/progressBarStyleHorizontal" android:layout_width="match_parent" android:layout_height="7dp" android:layout_marginTop="4dp" android:max="100" android:progress="0" android:progressDrawable="@drawable/widget_bar_amber" />
+            </LinearLayout>
+            <LinearLayout android:layout_width="0dp" android:layout_weight="1" android:layout_height="wrap_content" android:orientation="vertical" android:layout_marginStart="7dp">
+                <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:orientation="horizontal">
+                    <TextView android:layout_width="0dp" android:layout_weight="1" android:layout_height="wrap_content" android:text="Sarf" android:textColor="#AFC0E4" android:textSize="13sp" />
+                    <TextView android:id="@+id/w_out_val" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="—" android:textColor="#FFFFFF" android:textSize="14sp" android:textStyle="bold" />
+                </LinearLayout>
+                <ProgressBar android:id="@+id/w_out_bar" style="?android:attr/progressBarStyleHorizontal" android:layout_width="match_parent" android:layout_height="7dp" android:layout_marginTop="4dp" android:max="100" android:progress="0" android:progressDrawable="@drawable/widget_bar_green" />
+            </LinearLayout>
+        </LinearLayout>
+        <TextView android:id="@+id/w_note" android:layout_width="match_parent" android:layout_height="wrap_content" android:layout_marginTop="6dp" android:textColor="#8193BB" android:textSize="11sp" android:maxLines="1" />
+</LinearLayout>

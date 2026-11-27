@@ -69,6 +69,29 @@ public class StepCounterPlugin extends Plugin {
         }).start();
     }
 
+    /** Ilova bugungi holatni vidjetga yuboradi. */
+    @PluginMethod
+    public void updateWidget(PluginCall call) {
+        final Context c = getContext().getApplicationContext();
+        String today = StepStore.day(System.currentTimeMillis());
+        c.getSharedPreferences(OdatWidget.P, Context.MODE_PRIVATE).edit()
+            .putString("date", today)
+            .putLong("steps", call.getInt("steps", 0))
+            .putLong("stepGoal", call.getInt("stepGoal", 10000))
+            .putLong("walkAt", StepStore.walkOn(c, today))
+            .putLong("habDone", call.getInt("habDone", 0))
+            .putLong("habTotal", call.getInt("habTotal", 0))
+            .putLong("kcalIn", call.getInt("kcalIn", 0))
+            .putLong("kcalTgt", call.getInt("kcalTgt", 0))
+            .putFloat("baseMeasured", call.getFloat("baseMeasured", 0f))
+            .putFloat("baseFactor", call.getFloat("baseFactor", 0f))
+            .putFloat("perStep", call.getFloat("perStep", 0f))
+            .putFloat("exKcal", call.getFloat("exKcal", 0f))
+            .apply();
+        OdatWidget.refreshAll(c);
+        call.resolve();
+    }
+
     @PluginMethod
     public void getDays(PluginCall call) {
         final Context c = getContext().getApplicationContext();

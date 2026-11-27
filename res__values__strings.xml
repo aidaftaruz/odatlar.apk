@@ -1,0 +1,8 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name">Odatlar daftari</string>
+    <string name="title_activity_main">Odatlar daftari</string>
+    <string name="package_name">uz.diyor.odatlar</string>
+    <string name="custom_url_scheme">uz.diyor.odatlar</string>
+    <string name="widget_desc">Qadam, odatlar va kaloriya</string>
+</resources>
