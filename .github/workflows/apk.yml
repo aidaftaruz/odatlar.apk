@@ -16,13 +16,20 @@ jobs:
       - name: Fayllarni joyiga qo'yish
         run: |
           J=android/app/src/main/java/uz/diyor/odatlar
+          R=android/app/src/main/res
           mkdir -p $J
           for f in *.java; do [ -f "$f" ] && mv -f "$f" $J/; done
+          # res__papka__nomi.xml  ->  res/papka/nomi.xml
+          for f in res__*__*; do
+            [ -f "$f" ] || continue
+            d=$(echo "$f" | awk -F'__' '{print $2}'); n=$(echo "$f" | awk -F'__' '{print $3}')
+            mkdir -p $R/$d && mv -f "$f" $R/$d/$n
+          done
           [ -f AndroidManifest.xml ] && mv -f AndroidManifest.xml android/app/src/main/
           [ -f build.gradle ] && mv -f build.gradle android/app/build.gradle
           [ -f app.js ] && mv -f app.js src/app.js
           [ -f index.html ] && mv -f index.html www/index.html
-          ls $J
+          ls $J $R/layout $R/xml 2>/dev/null || true
 
       - uses: actions/setup-node@v4
         with:
